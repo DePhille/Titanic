@@ -25,5 +25,6 @@ set(DAEMON_SOURCES
 
 add_executable (titanic_daemon ${DAEMON_SOURCES})
 target_link_libraries(titanic_daemon LINK_PRIVATE PocoFoundation)
+target_link_libraries(titanic_daemon LINK_PRIVATE PocoUtil)
 target_link_libraries(titanic_daemon LINK_PRIVATE PocoNet)
 target_compile_features(titanic_daemon PUBLIC cxx_auto_type)

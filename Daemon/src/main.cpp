@@ -2,6 +2,10 @@
 
 #include <algorithm>
 
+#include <Poco/Util/ServerApplication.h>
+#include <Poco/Util/Option.h>
+#include <Poco/Util/OptionSet.h>
+#include <Poco/Util/HelpFormatter.h>
 #include <Poco/Stopwatch.h>
 #include <Poco/File.h>
 #include <Poco/SimpleFileChannel.h>
@@ -14,6 +18,14 @@
 #include "interface/TcpServer.h"
 #include "artefact/Artefact.h"
 #include "util/LoggerMacros.hpp"
+
+
+using Poco::Util::Application;
+using Poco::Util::ServerApplication;
+using Poco::Util::Option;
+using Poco::Util::OptionSet;
+using Poco::Util::OptionCallback;
+using Poco::Util::HelpFormatter;
 
 void
 run(const std::string& path) {
@@ -107,36 +119,83 @@ void initLogger() {
 	Poco::Logger::root().setLevel(Poco::Message::PRIO_TRACE);
 }
 
-int main(int argc, char* argv[]) {
-	initLogger();
-
-	// Read input
-	std::string listPath;
-    if (argc < 2) {
-        std::cout << "No path specified, listing current dir";
-		listPath = ".";
-    } else {
-        std::cout << "Listing for " << argv[1] << std::endl;
-		listPath = argv[1];
-    }
-	run2(listPath);
-	run(listPath);
-
-	// Start TcpServer
-	std::cout << "============================================================================" << std::endl;
-	std::cout << " Starting TcpServer" << std::endl;
-	titanic::interface::TcpServer tcpServer;
-	bool keepRunning = true;
-	while (keepRunning) {
-		const std::string command = tcpServer.receiveCommand();
-		std::cout << "Command: " << command << std::endl;
-		if (command == "exit") {
-			break;
-		} else if (command == "hello") {
-			run("../../");
-		}
+class TitanicDaemon : public Poco::Util::ServerApplication
+{
+public:
+	TitanicDaemon() : _helpRequested(false)
+	{
 	}
-	std::cout << "TcpServer ended" << std::endl;
 
-	return 0;
-}
+	~TitanicDaemon()
+	{
+	}
+
+protected:
+	void initialize(Application& self)
+	{
+		loadConfiguration(); // load default configuration files, if present
+		ServerApplication::initialize(self);
+	}
+
+	void uninitialize()
+	{
+		ServerApplication::uninitialize();
+	}
+
+	void defineOptions(OptionSet& options)
+	{
+		ServerApplication::defineOptions(options);
+
+		options.addOption(
+			Option("help", "h", "display help information on command line arguments")
+			.required(false)
+			.repeatable(false)
+			.callback(OptionCallback<TitanicDaemon>(this, &TitanicDaemon::handleHelp)));
+	}
+
+	void handleHelp(const std::string& name, const std::string& value)
+	{
+		_helpRequested = true;
+		displayHelp();
+		stopOptionsProcessing();
+	}
+
+	void displayHelp()
+	{
+		HelpFormatter helpFormatter(options());
+		helpFormatter.setCommand(commandName());
+		helpFormatter.setUsage("OPTIONS");
+		helpFormatter.setHeader("A sample server application that demonstrates some of the features of the Util::ServerApplication class.");
+		helpFormatter.format(std::cout);
+	}
+
+	int main(const ArgVec& args)
+	{
+		initLogger();
+		if (_helpRequested)
+			return Application::EXIT_OK;
+
+		// Read input
+		std::string listPath;
+		if (args.size() < 1) {
+			std::cout << "No path specified, listing current dir";
+			listPath = ".";
+		}
+		else {
+			std::cout << "Listing for " << args[0] << std::endl;
+			listPath = args[0];
+		}
+		run2(listPath);
+		::run(listPath);
+
+		std::cout << "Waiting..." << std::endl;
+		waitForTerminationRequest();
+		return Application::EXIT_OK;
+	}
+
+private:
+	bool _helpRequested;
+};
+
+
+POCO_SERVER_MAIN(TitanicDaemon)
