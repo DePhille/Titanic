@@ -15,17 +15,17 @@ namespace artefact {
 util::Logger Artefact::Log("titanic.artefact");
 
 Artefact::Artefact(const Poco::File& path) : _directory(NULL), _path(path) {
-	TITANIC_DBG(Log, "Artefact created on [" + path.path() + "]");
+	LOG_DBG(Log, "Artefact created on [" + path.path() + "]");
 }
 
 Artefact::~Artefact() {
 	reset();
-	TITANIC_DBG(Log, "Artefact destroyed");
+	LOG_DBG(Log, "Artefact destroyed");
 }
 
 void
 Artefact::initialize() {
-	TITANIC_DBG(Log, "Initializing artefact");
+	LOG_DBG(Log, "Initializing artefact");
 
 	// Validate input directory
 	if (!_path.exists()) {
@@ -42,7 +42,7 @@ Artefact::initialize() {
 	reset();
 	_directory = new Directory(Poco::File(_path.path()));
 
-	TITANIC_DBG(Log, "Artefact initialized");
+	LOG_DBG(Log, "Artefact initialized");
 }
 
 void

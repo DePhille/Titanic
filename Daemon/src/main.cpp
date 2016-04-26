@@ -18,6 +18,7 @@
 #include "interface/TcpServer.h"
 #include "artefact/Artefact.h"
 #include "util/LoggerMacros.hpp"
+#include "subsystem/FilesystemWatcher.h"
 
 
 using Poco::Util::Application;
@@ -124,6 +125,8 @@ class TitanicDaemon : public Poco::Util::ServerApplication
 public:
 	TitanicDaemon() : _helpRequested(false)
 	{
+		initLogger();
+		addSubsystem(new titanic::subsystem::FilesystemWatcher());
 	}
 
 	~TitanicDaemon()
@@ -171,7 +174,6 @@ protected:
 
 	int main(const ArgVec& args)
 	{
-		initLogger();
 		if (_helpRequested)
 			return Application::EXIT_OK;
 

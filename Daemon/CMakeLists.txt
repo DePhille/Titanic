@@ -17,6 +17,8 @@ set(DAEMON_SOURCES
 	"src/interface/TcpServer.cpp"
 	"src/scanner/Scanner.h"
 	"src/scanner/Scanner.cpp"
+	"src/subsystem/FilesystemWatcher.h"
+	"src/subsystem/FilesystemWatcher.cpp"
 	"src/parser/Parser.h"
 	"src/parser/Parser.cpp"
 	"src/util/Logger.h"

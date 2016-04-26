@@ -30,7 +30,7 @@ Directory::scan() {
 			foundDir->scan();
 			_subDirectories.push_back(foundDir);
 		} else {
-			TITANIC_WARN(Log, "Object is not a file or directory [" << dirIt->path() << "]");
+			LOG_WARN(Log, "Object is not a file or directory [" << dirIt->path() << "]");
 		}
 	}
 
